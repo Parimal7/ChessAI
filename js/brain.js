@@ -3,23 +3,6 @@
 
 var board = null
 var game = new Chess()
-var whiteSquareGrey = '#a9a9a9'
-var blackSquareGrey = '#696969'
-
-function removeGreySquares () {
-  $('#myBoard .square-55d63').css('background', '')
-}
-
-function greySquare (square) {
-  var $square = $('#myBoard .square-' + square)
-
-  var background = whiteSquareGrey
-  if ($square.hasClass('black-3c85d')) {
-    background = blackSquareGrey
-  }
-
-  $square.css('background', background)
-}
 
 function onDragStart (source, piece) {
   // do not pick up pieces if the game is over
@@ -29,21 +12,60 @@ function onDragStart (source, piece) {
   if (piece.search(/^b/) !== -1) return false
 }
 
-function makeRandomMove () {
-  var possibleMoves = game.moves()
+var evaluateBoard = function(board, color) {
+  // Sets the value for each piece using standard piece value
+  var pieceValue = {
+    'p': 100,
+    'n': 350,
+    'b': 350,
+    'r': 525,
+    'q': 1000,
+    'k': 10000
+  };
 
-  // game over
-  if (possibleMoves.length === 0) return
+  // Loop through all pieces on the board and sum up total
+  var value = 0;
+  board.forEach(function(row) {
+    row.forEach(function(piece) {
+      if (piece) {
+        // Subtract piece value if it is opponent's piece
+        value += pieceValue[piece['type']]
+                 * (piece['color'] === color ? 1 : -1);
+      }
+    });
+  });
 
-  var randomIdx = Math.floor(Math.random() * possibleMoves.length)
-  game.move(possibleMoves[randomIdx])
-  board.position(game.fen())
+  return value;
+};
+
+var calcBestMoveOne = function(playerColor) {
+  // List all possible moves
+  var possibleMoves = game.moves();
+  // Sort moves randomly, so the same move isn't always picked on ties
+  possibleMoves.sort(function(a, b){return 0.5 - Math.random()});
+
+  // exit if the game is over
+  if (game.game_over() === true || possibleMoves.length === 0) return;
+
+  // Search for move with highest value
+  var bestMoveSoFar = null;
+  var bestMoveValue = Number.NEGATIVE_INFINITY;
+  possibleMoves.forEach(function(move) {
+    game.move(move);
+    var moveValue = evaluateBoard(game.board(), playerColor);
+    if (moveValue > bestMoveValue) {
+      bestMoveSoFar = move;
+      bestMoveValue = moveValue;
+    }
+    game.undo();
+  });
+
+  game.move(bestMoveSoFar)
+  board.position(game.fen());
 }
 
-
 function onDrop (source, target) {
-  removeGreySquares()
-
+  
   // see if the move is legal
   var move = game.move({
     from: source,
@@ -53,30 +75,8 @@ function onDrop (source, target) {
 
   // illegal move
   if (move === null) return 'snapback'
-  window.setTimeout(makeRandomMove, 100)
-}
 
-function onMouseoverSquare (square, piece) {
-  // get list of possible moves for this square
-  var moves = game.moves({
-    square: square,
-    verbose: true
-  })
-
-  // exit if there are no moves available for this square
-  if (moves.length === 0) return
-
-  // highlight the square they moused over
-  greySquare(square)
-
-  // highlight the possible squares for this piece
-  for (var i = 0; i < moves.length; i++) {
-    greySquare(moves[i].to)
-  }
-}
-
-function onMouseoutSquare (square, piece) {
-  removeGreySquares()
+  window.setTimeout(calcBestMoveOne(), 250)
 }
 
 function onSnapEnd () {
@@ -88,8 +88,6 @@ var config = {
   position: 'start',
   onDragStart: onDragStart,
   onDrop: onDrop,
-  onMouseoutSquare: onMouseoutSquare,
-  onMouseoverSquare: onMouseoverSquare,
   onSnapEnd: onSnapEnd
 }
 board = Chessboard('myBoard', config)
