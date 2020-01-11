@@ -2,13 +2,38 @@
 <html>
 <head>
 	<title>ChessAI</title>
+	<!--Calling jquery with Google content delivery network-->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<!--Calling chess.js from local directory, the CDN version does not support board() function callback-->
 	<script src="./js/chess.min.js"></script>
 	<script src="./js/chessboard-1.0.0.min.js"></script>
 	<link rel="stylesheet" href="./css/chessboard-1.0.0.min.css">
 </head>
 <body>
-	<div id="myBoard" style="width: 400px"></div>
-	<script src="./js/brain.js"></script>
+	<div id="board" style="width: 400px"></div>
+	<br>
+	Please pick an algorithm and depth level to play. You are white.
+	<br><br>
+	Algorithm:
+    <select id="algorithm">
+        <option value="1">1: random</option>
+        <option value="2">2: look-one-ahead</option>
+        <option value="3">3: minimax</option>
+        <option value="4" selected>4: alpha-beta</option>
+    </select>
+    <br><br>
+	Search depth (for minimax / alpha-beta):
+    <select id="search-depth">
+        <option value="1">1</option>
+        <option value="2" selected="">2</option>
+        <option value="3">3</option>
+    </select>
+    <br><br>
+    PS: Open console (F12) to see logs of how AI calculates the moves.
+    <br><br>
+    <button onclick="playGame()">Let the AI battle itself.</button>
+	<script src="./js/brain2.js"></script>
+	<script src="./js/makemove.js"></script>
+	<script src="./js/boardstate.js"></script>
 </body>
 </html>
