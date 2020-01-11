@@ -5,7 +5,7 @@ Chrome).
 
 There are 4 algorithms ->
 1. random: Picks a random move using chess.js library
-2. loon-one-ahead: Adds board evaluation, can pick the current best move.
+2. look-one-ahead: Adds board evaluation, can pick the current best move.
 3. minimax: Adds the minimax algorithm, you can find more about it by googling.
 4. alpha-beta: Improves the minimax algo by pruning the search space.
 
